@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useStore } from '../store';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { auth } from '../firebase';
@@ -8,9 +8,21 @@ function EntryForm({ tab, item, onSave, onCancel, uploadImage }) {
   const [formData, setFormData] = useState(item || { tags: [] });
   const [uploading, setUploading] = useState(false);
 
+  // Auto-expand textareas on mount if they have content
+  useEffect(() => {
+    document.querySelectorAll('.notion-body').forEach(el => {
+      el.style.height = 'auto';
+      el.style.height = el.scrollHeight + 'px';
+    });
+  }, [formData]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+    if (e.target.tagName === 'TEXTAREA') {
+      e.target.style.height = 'auto';
+      e.target.style.height = (e.target.scrollHeight) + 'px';
+    }
   };
 
   const handleTagsChange = (e) => {
@@ -33,55 +45,93 @@ function EntryForm({ tab, item, onSave, onCancel, uploadImage }) {
     onSave(formData);
   };
 
+  const coverField = tab === 'projects' ? 'coverUrl' : (tab === 'caseStudies' ? 'visualUrl' : null);
+  const coverUrl = coverField ? formData[coverField] : null;
+
   return (
-    <form className="glass" onSubmit={handleSubmit} style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '20px', borderRadius: '16px' }}>
-      <h3>{item ? 'Edit Entry' : 'New Entry'}</h3>
-      <input name="title" placeholder="Title" value={formData.title || ''} onChange={handleChange} required style={{ padding: '10px' }} />
-      
-      {tab === 'projects' && (
-        <>
-          <input name="blurb" placeholder="Blurb" value={formData.blurb || ''} onChange={handleChange} style={{ padding: '10px' }} />
-          <input name="year" placeholder="Year" value={formData.year || ''} onChange={handleChange} style={{ padding: '10px' }} />
-          <input placeholder="Tags (comma separated)" value={(formData.tags || []).join(', ')} onChange={handleTagsChange} style={{ padding: '10px' }} />
-          <div>
-            <label>Cover Image (optional): </label>
-            <input type="file" onChange={(e) => handleFileChange(e, 'coverUrl')} />
-            {uploading && <span>Uploading...</span>}
-            {formData.coverUrl && <img src={formData.coverUrl} style={{ width: '50px', height: '50px', objectFit: 'cover', marginLeft: '10px' }} />}
-          </div>
-        </>
-      )}
-
-      {tab === 'caseStudies' && (
-        <>
-          <input name="kicker" placeholder="Kicker (e.g. Growth · 12 weeks)" value={formData.kicker || ''} onChange={handleChange} style={{ padding: '10px' }} />
-          <textarea name="problem" placeholder="Problem" value={formData.problem || ''} onChange={handleChange} style={{ padding: '10px', height: '60px' }} />
-          <textarea name="approach" placeholder="Approach" value={formData.approach || ''} onChange={handleChange} style={{ padding: '10px', height: '60px' }} />
-          <textarea name="outcome" placeholder="Outcome" value={formData.outcome || ''} onChange={handleChange} style={{ padding: '10px', height: '60px' }} />
-          <div>
-            <label>Visual Image (optional): </label>
-            <input type="file" onChange={(e) => handleFileChange(e, 'visualUrl')} />
-            {uploading && <span>Uploading...</span>}
-            {formData.visualUrl && <img src={formData.visualUrl} style={{ width: '50px', height: '50px', objectFit: 'cover', marginLeft: '10px' }} />}
-          </div>
-        </>
-      )}
-
-      {tab === 'teardowns' && (
-        <>
-          <input name="app" placeholder="App Name" value={formData.app || ''} onChange={handleChange} style={{ padding: '10px' }} />
-          <input name="verdict" placeholder="Verdict" value={formData.verdict || ''} onChange={handleChange} style={{ padding: '10px' }} />
-          <input name="rating" type="number" step="0.1" placeholder="Rating (out of 10)" value={formData.rating || ''} onChange={handleChange} style={{ padding: '10px' }} />
-          <input placeholder="Tags (comma separated)" value={(formData.tags || []).join(', ')} onChange={handleTagsChange} style={{ padding: '10px' }} />
-          {/* Note: Full teardown detail lists/scores are complex, sticking to main card fields for now */}
-        </>
-      )}
-
-      <div style={{ display: 'flex', gap: '10px' }}>
-        <button type="submit" className="seg active" style={{ padding: '10px 20px', background: 'var(--accent-ink)' }} disabled={uploading}>Save</button>
-        <button type="button" className="seg" onClick={onCancel} style={{ padding: '10px 20px' }}>Cancel</button>
+    <div className="notion-editor">
+      <div className="notion-actions">
+        <button type="button" className="seg" onClick={onCancel} style={{ padding: '8px 16px' }}>Cancel</button>
+        <button type="button" className="seg active" onClick={handleSubmit} style={{ padding: '8px 16px', background: 'var(--accent-ink)' }} disabled={uploading}>
+          {uploading ? 'Saving...' : 'Save'}
+        </button>
       </div>
-    </form>
+
+      {coverField && (
+        <label className="notion-cover">
+          {coverUrl ? <img src={coverUrl} alt="Cover" /> : <div className="notion-cover-label">Add Cover</div>}
+          <input type="file" style={{ display: 'none' }} onChange={(e) => handleFileChange(e, coverField)} />
+        </label>
+      )}
+
+      <input name="title" className="notion-title" placeholder="Untitled" value={formData.title || ''} onChange={handleChange} />
+
+      <div className="notion-props">
+        {tab === 'projects' && (
+          <>
+            <div className="notion-prop-row">
+              <div className="notion-prop-label">📅 Year</div>
+              <input name="year" className="notion-prop-val" placeholder="Empty" value={formData.year || ''} onChange={handleChange} />
+            </div>
+            <div className="notion-prop-row">
+              <div className="notion-prop-label">🏷️ Tags</div>
+              <input className="notion-prop-val" placeholder="Empty (comma separated)" value={(formData.tags || []).join(', ')} onChange={handleTagsChange} />
+            </div>
+          </>
+        )}
+        
+        {tab === 'caseStudies' && (
+          <div className="notion-prop-row">
+            <div className="notion-prop-label">🎯 Kicker</div>
+            <input name="kicker" className="notion-prop-val" placeholder="Empty" value={formData.kicker || ''} onChange={handleChange} />
+          </div>
+        )}
+
+        {tab === 'teardowns' && (
+          <>
+            <div className="notion-prop-row">
+              <div className="notion-prop-label">📱 App Name</div>
+              <input name="app" className="notion-prop-val" placeholder="Empty" value={formData.app || ''} onChange={handleChange} />
+            </div>
+            <div className="notion-prop-row">
+              <div className="notion-prop-label">⭐️ Rating</div>
+              <input name="rating" type="number" step="0.1" className="notion-prop-val" placeholder="Empty (out of 10)" value={formData.rating || ''} onChange={handleChange} />
+            </div>
+            <div className="notion-prop-row">
+              <div className="notion-prop-label">🏷️ Tags</div>
+              <input className="notion-prop-val" placeholder="Empty (comma separated)" value={(formData.tags || []).join(', ')} onChange={handleTagsChange} />
+            </div>
+            <div className="notion-prop-row">
+              <div className="notion-prop-label">⚖️ Verdict</div>
+              <input name="verdict" className="notion-prop-val" placeholder="Empty" value={formData.verdict || ''} onChange={handleChange} />
+            </div>
+          </>
+        )}
+      </div>
+
+      <div className="notion-content">
+        {tab === 'projects' && (
+          <textarea name="blurb" className="notion-body" placeholder="Write a blurb..." value={formData.blurb || ''} onChange={handleChange} />
+        )}
+        
+        {tab === 'caseStudies' && (
+          <>
+            <h3 style={{ marginBottom: '8px' }}>Problem</h3>
+            <textarea name="problem" className="notion-body" placeholder="Describe the problem..." value={formData.problem || ''} onChange={handleChange} />
+            <br/><br/>
+            <h3 style={{ marginBottom: '8px' }}>Approach</h3>
+            <textarea name="approach" className="notion-body" placeholder="Describe your approach..." value={formData.approach || ''} onChange={handleChange} />
+            <br/><br/>
+            <h3 style={{ marginBottom: '8px' }}>Outcome</h3>
+            <textarea name="outcome" className="notion-body" placeholder="Describe the outcome..." value={formData.outcome || ''} onChange={handleChange} />
+          </>
+        )}
+
+        {tab === 'teardowns' && (
+          <p style={{ opacity: 0.5, fontStyle: 'italic', padding: '20px 0' }}>Note: Full teardown detail lists and scores are managed in the code scaffolding. This editor manages the card meta-data.</p>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -97,7 +147,7 @@ export function AdminPage() {
 
   const isMock = !auth;
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (auth) {
       const unsubscribe = auth.onAuthStateChanged((u) => setUser(u));
       return unsubscribe;
@@ -166,31 +216,35 @@ export function AdminPage() {
 
   return (
     <div className="page wrap" style={{ marginTop: '100px' }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
-        <div>
-          <h1 style={{ margin: 0 }}>Admin Dashboard</h1>
-          <p style={{ opacity: 0.6 }}>Manage your content here. Only admins can see this page.</p>
-        </div>
-        <button onClick={handleLogout} className="seg" style={{ padding: '10px 20px', background: 'rgba(255,255,255,0.1)' }}>Logout</button>
-      </header>
+      {!(isAdding || editingItem) && (
+        <>
+          <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
+            <div>
+              <h1 style={{ margin: 0 }}>Admin Dashboard</h1>
+              <p style={{ opacity: 0.6 }}>Manage your content here. Only admins can see this page.</p>
+            </div>
+            <button onClick={handleLogout} className="seg" style={{ padding: '10px 20px', background: 'rgba(255,255,255,0.1)' }}>Logout</button>
+          </header>
 
-      <div style={{ display: 'flex', gap: '20px', marginBottom: '20px', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', gap: '20px' }}>
-          {['projects', 'caseStudies', 'teardowns'].map(tab => (
-            <button 
-              key={tab}
-              onClick={() => { setActiveTab(tab); setIsAdding(false); setEditingItem(null); }}
-              className={`seg ${activeTab === tab ? 'active' : ''}`}
-              style={{ padding: '10px 20px' }}
-            >
-              {tab.charAt(0).toUpperCase() + tab.slice(1).replace(/([A-Z])/g, ' $1')}
+          <div style={{ display: 'flex', gap: '20px', marginBottom: '20px', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', gap: '20px' }}>
+              {['projects', 'caseStudies', 'teardowns'].map(tab => (
+                <button 
+                  key={tab}
+                  onClick={() => { setActiveTab(tab); setIsAdding(false); setEditingItem(null); }}
+                  className={`seg ${activeTab === tab ? 'active' : ''}`}
+                  style={{ padding: '10px 20px' }}
+                >
+                  {tab.charAt(0).toUpperCase() + tab.slice(1).replace(/([A-Z])/g, ' $1')}
+                </button>
+              ))}
+            </div>
+            <button onClick={() => { setIsAdding(true); setEditingItem(null); }} className="seg active" style={{ padding: '10px 20px', background: 'var(--accent-ink)' }}>
+              + Add New
             </button>
-          ))}
-        </div>
-        <button onClick={() => { setIsAdding(true); setEditingItem(null); }} className="seg active" style={{ padding: '10px 20px', background: 'var(--accent-ink)' }}>
-          + Add New
-        </button>
-      </div>
+          </div>
+        </>
+      )}
 
       {(isAdding || editingItem) ? (
         <EntryForm tab={activeTab} item={editingItem} onSave={handleSave} onCancel={() => { setIsAdding(false); setEditingItem(null); }} uploadImage={uploadImage} />
