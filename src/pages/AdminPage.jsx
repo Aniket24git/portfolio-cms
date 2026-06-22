@@ -1,0 +1,241 @@
+import React, { useState } from 'react';
+import { useStore } from '../store';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import { auth } from '../firebase';
+import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
+
+function EntryForm({ tab, item, onSave, onCancel, uploadImage }) {
+  const [formData, setFormData] = useState(item || { tags: [] });
+  const [uploading, setUploading] = useState(false);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleTagsChange = (e) => {
+    setFormData({ ...formData, tags: e.target.value.split(',').map(t => t.trim()) });
+  };
+
+  const handleFileChange = async (e, field) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploading(true);
+    const url = await uploadImage(file);
+    if (url) {
+      setFormData({ ...formData, [field]: url });
+    }
+    setUploading(false);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSave(formData);
+  };
+
+  return (
+    <form className="glass" onSubmit={handleSubmit} style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '20px', borderRadius: '16px' }}>
+      <h3>{item ? 'Edit Entry' : 'New Entry'}</h3>
+      <input name="title" placeholder="Title" value={formData.title || ''} onChange={handleChange} required style={{ padding: '10px' }} />
+      
+      {tab === 'projects' && (
+        <>
+          <input name="blurb" placeholder="Blurb" value={formData.blurb || ''} onChange={handleChange} style={{ padding: '10px' }} />
+          <input name="year" placeholder="Year" value={formData.year || ''} onChange={handleChange} style={{ padding: '10px' }} />
+          <input placeholder="Tags (comma separated)" value={(formData.tags || []).join(', ')} onChange={handleTagsChange} style={{ padding: '10px' }} />
+          <div>
+            <label>Cover Image (optional): </label>
+            <input type="file" onChange={(e) => handleFileChange(e, 'coverUrl')} />
+            {uploading && <span>Uploading...</span>}
+            {formData.coverUrl && <img src={formData.coverUrl} style={{ width: '50px', height: '50px', objectFit: 'cover', marginLeft: '10px' }} />}
+          </div>
+        </>
+      )}
+
+      {tab === 'caseStudies' && (
+        <>
+          <input name="kicker" placeholder="Kicker (e.g. Growth · 12 weeks)" value={formData.kicker || ''} onChange={handleChange} style={{ padding: '10px' }} />
+          <textarea name="problem" placeholder="Problem" value={formData.problem || ''} onChange={handleChange} style={{ padding: '10px', height: '60px' }} />
+          <textarea name="approach" placeholder="Approach" value={formData.approach || ''} onChange={handleChange} style={{ padding: '10px', height: '60px' }} />
+          <textarea name="outcome" placeholder="Outcome" value={formData.outcome || ''} onChange={handleChange} style={{ padding: '10px', height: '60px' }} />
+          <div>
+            <label>Visual Image (optional): </label>
+            <input type="file" onChange={(e) => handleFileChange(e, 'visualUrl')} />
+            {uploading && <span>Uploading...</span>}
+            {formData.visualUrl && <img src={formData.visualUrl} style={{ width: '50px', height: '50px', objectFit: 'cover', marginLeft: '10px' }} />}
+          </div>
+        </>
+      )}
+
+      {tab === 'teardowns' && (
+        <>
+          <input name="app" placeholder="App Name" value={formData.app || ''} onChange={handleChange} style={{ padding: '10px' }} />
+          <input name="verdict" placeholder="Verdict" value={formData.verdict || ''} onChange={handleChange} style={{ padding: '10px' }} />
+          <input name="rating" type="number" step="0.1" placeholder="Rating (out of 10)" value={formData.rating || ''} onChange={handleChange} style={{ padding: '10px' }} />
+          <input placeholder="Tags (comma separated)" value={(formData.tags || []).join(', ')} onChange={handleTagsChange} style={{ padding: '10px' }} />
+          {/* Note: Full teardown detail lists/scores are complex, sticking to main card fields for now */}
+        </>
+      )}
+
+      <div style={{ display: 'flex', gap: '10px' }}>
+        <button type="submit" className="seg active" style={{ padding: '10px 20px', background: 'var(--accent-ink)' }} disabled={uploading}>Save</button>
+        <button type="button" className="seg" onClick={onCancel} style={{ padding: '10px 20px' }}>Cancel</button>
+      </div>
+    </form>
+  );
+}
+
+export function AdminPage() {
+  const { data, updateData, addEntry, updateEntry, deleteEntry, uploadImage } = useStore();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [user, setUser] = useState(auth?.currentUser || null);
+  const [activeTab, setActiveTab] = useState('projects');
+  
+  const [editingItem, setEditingItem] = useState(null);
+  const [isAdding, setIsAdding] = useState(false);
+
+  const isMock = !auth;
+
+  React.useEffect(() => {
+    if (auth) {
+      const unsubscribe = auth.onAuthStateChanged((u) => setUser(u));
+      return unsubscribe;
+    } else {
+      setUser({ email: 'mock@admin.com' });
+    }
+  }, []);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    if (auth) {
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+      } catch (err) {
+        alert("Login failed: " + err.message);
+      }
+    }
+  };
+
+  const handleLogout = async () => {
+    if (auth) {
+      await signOut(auth);
+    } else {
+      setUser(null);
+    }
+  };
+
+  const onDragEnd = (result) => {
+    if (!result.destination) return;
+    const items = Array.from(data[activeTab]);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+    const updatedItems = items.map((item, idx) => ({ ...item, idx: (idx + 1).toString().padStart(2, '0') }));
+    updateData({ ...data, [activeTab]: updatedItems });
+  };
+
+  const handleSave = async (item) => {
+    if (editingItem) {
+      await updateEntry(activeTab, editingItem.idx, item);
+    } else {
+      await addEntry(activeTab, item);
+    }
+    setEditingItem(null);
+    setIsAdding(false);
+  };
+
+  const handleDelete = async (idx) => {
+    if (confirm('Are you sure you want to delete this item?')) {
+      await deleteEntry(activeTab, idx);
+    }
+  };
+
+  if (!user) {
+    return (
+      <div className="page wrap" style={{ marginTop: '100px', display: 'flex', justifyContent: 'center' }}>
+        <form className="glass" style={{ padding: '40px', display: 'flex', flexDirection: 'column', gap: '20px', width: '400px' }} onSubmit={handleLogin}>
+          <h2>Admin Login</h2>
+          <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} style={{ padding: '10px' }} />
+          <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} style={{ padding: '10px' }} />
+          <button type="submit" className="seg active" style={{ padding: '10px', background: 'var(--accent-ink)' }}>Login</button>
+          {isMock && <p style={{ fontSize: '12px', opacity: 0.6 }}>Running in mock mode. Just click login.</p>}
+        </form>
+      </div>
+    );
+  }
+
+  return (
+    <div className="page wrap" style={{ marginTop: '100px' }}>
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
+        <div>
+          <h1 style={{ margin: 0 }}>Admin Dashboard</h1>
+          <p style={{ opacity: 0.6 }}>Manage your content here. Only admins can see this page.</p>
+        </div>
+        <button onClick={handleLogout} className="seg" style={{ padding: '10px 20px', background: 'rgba(255,255,255,0.1)' }}>Logout</button>
+      </header>
+
+      <div style={{ display: 'flex', gap: '20px', marginBottom: '20px', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', gap: '20px' }}>
+          {['projects', 'caseStudies', 'teardowns'].map(tab => (
+            <button 
+              key={tab}
+              onClick={() => { setActiveTab(tab); setIsAdding(false); setEditingItem(null); }}
+              className={`seg ${activeTab === tab ? 'active' : ''}`}
+              style={{ padding: '10px 20px' }}
+            >
+              {tab.charAt(0).toUpperCase() + tab.slice(1).replace(/([A-Z])/g, ' $1')}
+            </button>
+          ))}
+        </div>
+        <button onClick={() => { setIsAdding(true); setEditingItem(null); }} className="seg active" style={{ padding: '10px 20px', background: 'var(--accent-ink)' }}>
+          + Add New
+        </button>
+      </div>
+
+      {(isAdding || editingItem) ? (
+        <EntryForm tab={activeTab} item={editingItem} onSave={handleSave} onCancel={() => { setIsAdding(false); setEditingItem(null); }} uploadImage={uploadImage} />
+      ) : (
+        <div className="glass" style={{ padding: '20px', borderRadius: '16px' }}>
+          <DragDropContext onDragEnd={onDragEnd}>
+            <Droppable droppableId="droppable">
+              {(provided) => (
+                <div {...provided.droppableProps} ref={provided.innerRef}>
+                  {data[activeTab]?.map((item, index) => (
+                    <Draggable key={item.idx || item.title} draggableId={item.idx || item.title} index={index}>
+                      {(provided, snapshot) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                          style={{
+                            padding: '16px',
+                            margin: '0 0 8px 0',
+                            background: snapshot.isDragging ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.05)',
+                            borderRadius: '8px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '16px',
+                            cursor: 'grab',
+                            ...provided.draggableProps.style
+                          }}
+                        >
+                          <div style={{ opacity: 0.5 }}>☰</div>
+                          <div style={{ fontWeight: 600, width: '30px' }}>{item.idx}</div>
+                          <div style={{ flex: 1 }}>{item.title}</div>
+                          
+                          <button onClick={() => setEditingItem(item)} className="seg" style={{ padding: '5px 10px', cursor: 'pointer' }}>Edit</button>
+                          <button onClick={() => handleDelete(item.idx)} className="seg" style={{ padding: '5px 10px', cursor: 'pointer', color: '#ff6b6b' }}>Delete</button>
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
+          </DragDropContext>
+        </div>
+      )}
+    </div>
+  );
+}
