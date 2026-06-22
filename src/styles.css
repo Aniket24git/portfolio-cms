@@ -579,3 +579,131 @@ main { flex: 1; padding-bottom: clamp(60px, 10vh, 130px); }
   .gallery, .teardowns { grid-template-columns: 1fr; }
   .td-screens { grid-template-columns: 1fr; }
 }
+
+/* ============================================================
+   Notion-style admin editor
+   ============================================================ */
+.notion-editor {
+  position: relative;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  font-family: var(--sans);
+}
+
+.notion-actions {
+  position: sticky;
+  top: 80px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  z-index: 10;
+  margin-bottom: 20px;
+}
+
+.notion-cover {
+  width: 100%;
+  height: 200px;
+  background: var(--ti-10);
+  border-radius: var(--r-md);
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.notion-cover:hover { opacity: 0.85; }
+.notion-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+.notion-cover-label {
+  position: absolute;
+  font-size: 13px;
+  font-weight: 500;
+  background: rgba(0,0,0,0.45);
+  color: white;
+  padding: 6px 14px;
+  border-radius: var(--r-sm);
+  pointer-events: none;
+}
+
+.notion-editor input,
+.notion-editor textarea {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--ink);
+  font-family: inherit;
+  resize: none;
+}
+.notion-editor input::placeholder,
+.notion-editor textarea::placeholder {
+  color: var(--faint);
+}
+
+.notion-title {
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 24px;
+  width: 100%;
+}
+
+.notion-props {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--hair-soft);
+}
+.notion-prop-row {
+  display: flex;
+  align-items: flex-start;
+  min-height: 32px;
+}
+.notion-prop-label {
+  width: 140px;
+  color: var(--muted);
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  height: 32px;
+  flex-shrink: 0;
+  font-weight: 500;
+}
+.notion-prop-val {
+  flex: 1;
+  font-size: 14px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+.notion-prop-val:hover,
+.notion-prop-val:focus {
+  background: var(--hair-soft);
+}
+
+.notion-content h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.notion-body {
+  font-size: 16px;
+  line-height: 1.7;
+  min-height: 48px;
+  width: 100%;
+  overflow: hidden;
+}
+

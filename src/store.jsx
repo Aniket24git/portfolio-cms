@@ -1,9 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { PORTFOLIO as defaultData } from './data';
-import { db } from './firebase';
+import { db, storage } from './firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { storage } from './firebase';
 
 const StoreContext = createContext();
 

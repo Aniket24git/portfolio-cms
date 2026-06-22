@@ -7,18 +7,21 @@ import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 function EntryForm({ tab, item, onSave, onCancel, uploadImage }) {
   const [formData, setFormData] = useState(item || { tags: [] });
   const [uploading, setUploading] = useState(false);
+  const contentRef = React.useRef(null);
 
-  // Auto-expand textareas on mount if they have content
+  // Auto-expand textareas on mount
   useEffect(() => {
-    document.querySelectorAll('.notion-body').forEach(el => {
-      el.style.height = 'auto';
-      el.style.height = el.scrollHeight + 'px';
-    });
-  }, [formData]);
+    if (contentRef.current) {
+      contentRef.current.querySelectorAll('textarea').forEach(el => {
+        el.style.height = 'auto';
+        el.style.height = el.scrollHeight + 'px';
+      });
+    }
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData(prev => ({ ...prev, [name]: value }));
     if (e.target.tagName === 'TEXTAREA') {
       e.target.style.height = 'auto';
       e.target.style.height = (e.target.scrollHeight) + 'px';
@@ -26,7 +29,7 @@ function EntryForm({ tab, item, onSave, onCancel, uploadImage }) {
   };
 
   const handleTagsChange = (e) => {
-    setFormData({ ...formData, tags: e.target.value.split(',').map(t => t.trim()) });
+    setFormData(prev => ({ ...prev, tags: e.target.value.split(',').map(t => t.trim()) }));
   };
 
   const handleFileChange = async (e, field) => {
@@ -35,13 +38,12 @@ function EntryForm({ tab, item, onSave, onCancel, uploadImage }) {
     setUploading(true);
     const url = await uploadImage(file);
     if (url) {
-      setFormData({ ...formData, [field]: url });
+      setFormData(prev => ({ ...prev, [field]: url }));
     }
     setUploading(false);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = () => {
     onSave(formData);
   };
 
@@ -109,7 +111,7 @@ function EntryForm({ tab, item, onSave, onCancel, uploadImage }) {
         )}
       </div>
 
-      <div className="notion-content">
+      <div className="notion-content" ref={contentRef}>
         {tab === 'projects' && (
           <textarea name="blurb" className="notion-body" placeholder="Write a blurb..." value={formData.blurb || ''} onChange={handleChange} />
         )}
