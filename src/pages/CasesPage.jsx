@@ -33,7 +33,7 @@ export function CasesPage() {
                 <p>{c.outcome}</p>
               </div>
               <div className="metrics">
-                {c.metrics.map((m) => (
+                {(c.metrics || []).map((m) => (
                   <div className="metric" key={m.l}>
                     <div className="v">{m.v}</div>
                     <div className="l">{m.l}</div>

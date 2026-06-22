@@ -7,7 +7,7 @@ import { SectionHead } from '../components/SectionHead';
 function TeardownDetail({ t, onBack }) {
   const { data } = useStore();
   const det = data.teardownDetail;
-  const fill = (s) => s.replace(/\{app\}/g, t.app);
+  const fill = (s) => s.replace(/\{app\}/g, t.app || 'App');
   return (
     <div className="tdetail">
       <button className="tback" onClick={onBack}>
@@ -18,16 +18,16 @@ function TeardownDetail({ t, onBack }) {
         <div className="td-hero-main">
           <div className="td-meta">
             <span className="tno">{t.idx}</span>
-            <span className="tapp">{t.app}</span>
+            <span className="tapp">{t.app || 'App'}</span>
           </div>
           <h1>{t.title}</h1>
           <p className="td-verdict">{t.verdict}</p>
-          <Chips items={t.tags} />
+          <Chips items={t.tags || []} />
         </div>
         <div className="td-rating">
-          <div className="rscore">{t.rating.toFixed(1)}<span>/10</span></div>
+          <div className="rscore">{Number(t.rating || 0).toFixed(1)}<span>/10</span></div>
           <div className="rlabel">overall</div>
-          <div className="rbar"><span style={{ width: t.rating * 10 + '%' }} /></div>
+          <div className="rbar"><span style={{ width: Number(t.rating || 0) * 10 + '%' }} /></div>
         </div>
       </header>
 
@@ -66,13 +66,16 @@ function TeardownDetail({ t, onBack }) {
       <section className="td-section">
         <div className="td-k">Scorecard</div>
         <div className="td-score glass">
-          {det.criteria.map((c, i) => (
-            <div className="scrow2" key={c}>
-              <div className="sc-k">{c}</div>
-              <div className="sc-bar"><span style={{ width: t.scores[i] * 10 + '%' }} /></div>
-              <div className="sc-v">{t.scores[i].toFixed(1)}</div>
-            </div>
-          ))}
+          {det.criteria.map((c, i) => {
+            const score = Number((t.scores || [])[i] || 0);
+            return (
+              <div className="scrow2" key={c}>
+                <div className="sc-k">{c}</div>
+                <div className="sc-bar"><span style={{ width: score * 10 + '%' }} /></div>
+                <div className="sc-v">{score.toFixed(1)}</div>
+              </div>
+            );
+          })}
         </div>
       </section>
     </div>
@@ -117,13 +120,13 @@ export function TeardownsPage() {
           >
             <div className="ttop">
               <span className="tno">{t.idx}</span>
-              <span className="tlogo">{t.app.slice(0, 1)}</span>
+              <span className="tlogo">{(t.app || ' ').slice(0, 1)}</span>
             </div>
-            <span className="tapp">{t.app}</span>
+            <span className="tapp">{t.app || 'App'}</span>
             <h3>{t.title}</h3>
             <p className="tverdict">{t.verdict}</p>
             <div className="tfoot">
-              <Chips items={t.tags} />
+              <Chips items={t.tags || []} />
               <span className="read">Read <span className="arr">→</span></span>
             </div>
           </article>
