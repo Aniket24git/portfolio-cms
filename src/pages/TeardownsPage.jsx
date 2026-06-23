@@ -5,8 +5,7 @@ import { Chips } from '../components/Chips';
 import { SectionHead } from '../components/SectionHead';
 
 function TeardownDetail({ t, onBack }) {
-  const { data } = useStore();
-  const det = data.teardownDetail;
+  const det = t.details || { broken: [], works: [], screens: [], criteria: [] };
   const fill = (s) => s.replace(/\{app\}/g, t.app || 'App');
   return (
     <div className="tdetail">

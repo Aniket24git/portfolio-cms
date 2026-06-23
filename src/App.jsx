@@ -5,7 +5,8 @@ import { ProjectsPage } from './pages/ProjectsPage';
 import { CasesPage } from './pages/CasesPage';
 import { TeardownsPage } from './pages/TeardownsPage';
 import { AnalyticsPage } from './pages/AnalyticsPage';
-import { AdminPage } from './pages/AdminPage';
+
+const AdminPage = React.lazy(() => import('./pages/AdminPage').then(module => ({ default: module.AdminPage })));
 
 const ACCENTS = {
   titanium: 'oklch(0.32 0.01 260)',
@@ -22,11 +23,12 @@ const PAGES = {
   admin: AdminPage,
 };
 
+import { useHashRouter } from './shared/hooks/useHashRouter';
+
 export function App() {
-  const [active, setActive] = React.useState(() => {
-    const h = (location.hash || '').replace('#', '');
-    return PAGES[h] ? h : 'projects';
-  });
+  const { active, navigate } = useHashRouter('projects');
+  // Only accept valid pages
+  const validActive = PAGES[active] ? active : 'projects';
 
   // Apply locked theme on mount
   React.useEffect(() => {
@@ -39,26 +41,16 @@ export function App() {
     r.style.setProperty('--accent-ink', ACCENTS.titanium);
   }, []);
 
-  // Navigate between pages
   const keepCollapsedRef = React.useRef(false);
   const heroH = React.useRef(320);
+  
   const go = (id) => {
-    if (id === active) return;
+    if (id === validActive) return;
     keepCollapsedRef.current = window.scrollY > heroH.current * 0.6;
-    setActive(id);
-    history.replaceState(null, '', '#' + id);
+    navigate(id);
   };
 
-  React.useEffect(() => {
-    const onHash = () => {
-      const h = (location.hash || '').replace('#', '');
-      if (PAGES[h]) setActive(h);
-    };
-    window.addEventListener('hashchange', onHash);
-    return () => window.removeEventListener('hashchange', onHash);
-  }, []);
-
-  const Page = PAGES[active];
+  const Page = PAGES[validActive];
   const { data: D, loading } = useStore();
 
   const [entering, setEntering] = React.useState(true);
@@ -66,7 +58,7 @@ export function App() {
     setEntering(true);
     const id = setTimeout(() => setEntering(false), 600);
     return () => clearTimeout(id);
-  }, [active]);
+  }, [validActive]);
 
   // Collapse hero into the top-left on scroll
   const heroRef = React.useRef(null);
@@ -108,12 +100,12 @@ export function App() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
     keepCollapsedRef.current = false;
-  }, [active]);
+  }, [validActive]);
 
   if (loading || !D) return <div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>Loading...</div>;
 
   const h = D.hero;
-  const isAdmin = active === 'admin';
+  const isAdmin = validActive === 'admin';
 
   return (
     <>
@@ -193,7 +185,7 @@ export function App() {
           </div>
 
           <div className="pillnav-wrap">
-            <PillNav active={active} onChange={go} />
+            <PillNav active={validActive} onChange={go} />
           </div>
 
           <div className="status-stack">
@@ -210,8 +202,10 @@ export function App() {
         )}
 
         <main>
-          <div className={'pagefx' + (entering ? ' entering' : '')} key={active}>
-            <Page />
+          <div className={'pagefx' + (entering ? ' entering' : '')} key={validActive}>
+            <React.Suspense fallback={<div style={{padding: '20px'}}>Loading...</div>}>
+              <Page />
+            </React.Suspense>
           </div>
         </main>
 
@@ -219,9 +213,9 @@ export function App() {
         <footer className="foot">
           <div className="fl">© {new Date().getFullYear()} {D.name} · {D.location}</div>
           <div className="fr">
-            <a href="#" onClick={(e) => e.preventDefault()}>Email</a>
-            <a href="#" onClick={(e) => e.preventDefault()}>LinkedIn</a>
-            <a href="#" onClick={(e) => e.preventDefault()}>Résumé</a>
+            <a href={`mailto:${D.contact?.email || 'hello@example.com'}`}>Email</a>
+            <a href={D.contact?.linkedin || '#'} target="_blank" rel="noreferrer">LinkedIn</a>
+            <a href={D.contact?.resume || '#'} target="_blank" rel="noreferrer">Résumé</a>
           </div>
         </footer>
         )}

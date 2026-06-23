@@ -1,16 +1,24 @@
-# React + Vite
+# Portfolio Architecture
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This portfolio is a single-page React application built with Vite, emphasizing clean design and solid architecture.
 
-Currently, two official plugins are available:
+## Getting Started
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+1. Clone the repository.
+2. Run `npm install`.
+3. Copy `.env.example` to `.env` and fill in your Firebase details.
+4. Run `npm run dev`.
 
-## React Compiler
+## Architecture Details
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Content Schema**: All data structures are strictly validated using `zod` in `src/content/contentSchema.js`.
+- **Repository Pattern**: We use a `ContentRepository` interface to decouple the React UI from the backend. The default implementation is `LocalContentRepository`, which stores data in `localStorage`. There is also a `FirebaseContentRepository`. You can swap them by altering `src/content/contentRepository.js` logic.
+- **Bundle Splitting**: The Vite build is configured to split vendor code (like React and Firebase) from the main application bundle to improve loading times.
 
-## Expanding the ESLint configuration
+## Testing
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Run tests with `npm test`. Tests use `vitest` and cover the repository and schema layer.
+
+## Firebase Configuration
+
+If you decide to use Firebase for a live admin panel, update the `.env` file with your credentials, and deploy `firestore.rules` and `storage.rules` to secure the backend.
