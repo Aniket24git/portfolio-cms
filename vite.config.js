@@ -7,10 +7,10 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          'firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage'],
-          'dnd': ['@hello-pangea/dnd'],
-          'react-vendor': ['react', 'react-dom']
+        manualChunks(id) {
+          if (id.includes('node_modules/firebase')) return 'firebase';
+          if (id.includes('node_modules/@hello-pangea/dnd')) return 'dnd';
+          if (id.includes('node_modules/react')) return 'react-vendor';
         }
       }
     }

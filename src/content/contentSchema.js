@@ -73,6 +73,15 @@ export const caseStudySchema = z.object({
   metrics: z.array(metricSchema),
 });
 
+// Teardown Details are shared templates
+export const teardownDetailSchema = z.object({
+  context: z.string(),
+  broken: z.array(z.string()),
+  works: z.array(z.string()),
+  screens: z.array(z.object({ tag: z.string(), cap: z.string() })),
+  criteria: z.array(z.string()),
+});
+
 export const teardownSchema = z.object({
   ...baseFields,
   idx: z.string(),
@@ -83,15 +92,6 @@ export const teardownSchema = z.object({
   rating: z.number(),
   scores: z.array(z.number()),
   details: teardownDetailSchema,
-});
-
-// Teardown Details are shared templates
-export const teardownDetailSchema = z.object({
-  context: z.string(),
-  broken: z.array(z.string()),
-  works: z.array(z.string()),
-  screens: z.array(z.object({ tag: z.string(), cap: z.string() })),
-  criteria: z.array(z.string()),
 });
 
 export const analyticsProjectSchema = z.object({

@@ -262,6 +262,7 @@ main { flex: 1; padding-bottom: clamp(60px, 10vh, 130px); }
   .pagefx.entering { animation: none; }
   .pillnav .thumb { transition: none; }
   .shimmer-on .pillnav .thumb::after { animation: none; }
+  .hero-grain, .hero-main, .hero-text, .hero-portrait, .hero-side, .cert-track { animation: none; }
 }
 
 /* ---------- hero (shared across pages, collapses on scroll) ---------- */
@@ -287,9 +288,17 @@ main { flex: 1; padding-bottom: clamp(60px, 10vh, 130px); }
   background-size: 30px 30px;
   -webkit-mask-image: radial-gradient(130% 130% at 100% 0%, black, transparent 70%);
           mask-image: radial-gradient(130% 130% at 100% 0%, black, transparent 70%);
+  animation: heroGridDrift 18s linear infinite;
 }
-.hero-main { position: relative; z-index: 1; align-self: center; display: flex; align-items: center; gap: clamp(18px, 2.6vw, 38px); }
+.hero-main {
+  position: relative; z-index: 1; align-self: center; display: flex; align-items: center; gap: clamp(18px, 2.6vw, 38px);
+  transform: translate3d(calc(var(--scrollp) * -18px), calc(var(--scrollp) * -8px), 0);
+  opacity: calc(1 - (var(--scrollp) * 0.22));
+  will-change: transform, opacity;
+  animation: heroContentIn 0.75s var(--ease) both;
+}
 .hero-text { min-width: 0; }
+.hero-text { animation: heroTextIn 0.8s var(--ease) 0.08s both; }
 
 /* portrait — coloured pencil sketch at rest, crossfading to a Claude-orange
    ink sketch as the hero collapses on scroll (it re-emerges in the corner) */
@@ -301,6 +310,9 @@ main { flex: 1; padding-bottom: clamp(60px, 10vh, 130px); }
   background: var(--ti-00);
   border: 1px solid var(--glass-edge);
   box-shadow: var(--glass-shadow), inset 0 1px 0 rgba(255,255,255,0.5);
+  transform: scale(calc(1 - (var(--scrollp) * 0.08)));
+  will-change: transform;
+  animation: heroPortraitIn 0.85s var(--ease) both;
 }
 .hero-portrait::after {
   content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 2;
@@ -343,6 +355,10 @@ main { flex: 1; padding-bottom: clamp(60px, 10vh, 130px); }
   display: flex; flex-direction: column; justify-content: center; gap: 0;
   padding-left: clamp(0px, 2vw, 28px);
   border-left: 1px solid var(--hair);
+  transform: translate3d(calc(var(--scrollp) * 18px), 0, 0);
+  opacity: calc(1 - (var(--scrollp) * 0.42));
+  will-change: transform, opacity;
+  animation: heroSideIn 0.75s var(--ease) 0.16s both;
 }
 .hero-fact { padding: 14px 0; border-bottom: 1px solid var(--hair-soft); }
 .hero-fact:first-child { padding-top: 0; }
@@ -398,6 +414,29 @@ main { flex: 1; padding-bottom: clamp(60px, 10vh, 130px); }
 }
 .edu-pop-name { font-size: 12.5px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.15; color: var(--ink); }
 .edu-pop-meta { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+
+/* credentials skeleton — the right rail stays quiet while the certificate strip
+   supplies a small, continuous motion cue for the hero */
+.hero-credentials { display: grid; grid-template-columns: minmax(116px, 0.7fr) minmax(0, 1.3fr); gap: clamp(18px, 2.8vw, 30px); align-items: start; }
+.hero-credentials .cred-col { min-width: 0; }
+.hero-credentials .hero-edu { margin-top: 2px; }
+.cert-ticker { position: relative; overflow: hidden; min-width: 0; margin-top: 2px; mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent); -webkit-mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent); }
+.cert-track { display: flex; width: max-content; gap: 18px; padding: 4px 0; animation: certTicker 22s linear infinite; }
+.cert-ticker:hover .cert-track, .cert-ticker:focus-within .cert-track { animation-play-state: paused; }
+.cert-chip { display: inline-flex; align-items: center; gap: 9px; min-width: 174px; padding-right: 18px; border-right: 1px solid var(--hair-soft); }
+.cert-mark { width: 30px; height: 30px; flex: none; display: grid; place-items: center; border-radius: 8px; color: var(--ink); background: var(--ti-10); font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: 0.02em; overflow: hidden; }
+.cert-mark[data-logo="1"] { background: transparent; }
+.cert-logo { width: 100%; height: 100%; display: block; object-fit: contain; }
+.cert-meta { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.cert-issuer { font-size: 12px; font-weight: 600; color: var(--ink); white-space: nowrap; }
+.cert-name { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.03em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+
+@keyframes heroContentIn { from { opacity: 0; transform: translate3d(-18px, 10px, 0); } to { opacity: 1; transform: translate3d(calc(var(--scrollp) * -18px), calc(var(--scrollp) * -8px), 0); } }
+@keyframes heroTextIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+@keyframes heroPortraitIn { from { opacity: 0; transform: scale(0.92) rotate(-2deg); } to { opacity: 1; transform: scale(calc(1 - (var(--scrollp) * 0.08))); } }
+@keyframes heroSideIn { from { opacity: 0; transform: translate3d(18px, 8px, 0); } to { opacity: calc(1 - (var(--scrollp) * 0.42)); transform: translate3d(calc(var(--scrollp) * 18px), 0, 0); } }
+@keyframes heroGridDrift { from { background-position: 0 0, 0 0; } to { background-position: 30px 30px, 30px 30px; } }
+@keyframes certTicker { from { transform: translateX(0); } to { transform: translateX(calc(-50% - 9px)); } }
 
 /* section header */
 .sechead { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin: clamp(24px,5vh,48px) 0 28px; flex-wrap: wrap; }
@@ -554,6 +593,7 @@ main { flex: 1; padding-bottom: clamp(60px, 10vh, 130px); }
   .gallery, .teardowns { grid-template-columns: repeat(2, 1fr); }
   .hero { grid-template-columns: 1fr; gap: 26px; }
   .hero-side { border-left: 0; border-top: 1px solid var(--hair); padding-left: 0; padding-top: 22px; }
+  .hero-credentials { grid-template-columns: minmax(116px, 0.7fr) minmax(0, 1.3fr); }
   .case, .case:nth-child(even) { grid-template-columns: 1fr; }
   .case .cmedia, .case:nth-child(even) .cmedia { order: 0; }
   .essay { grid-template-columns: 1fr; }
@@ -574,6 +614,7 @@ main { flex: 1; padding-bottom: clamp(60px, 10vh, 130px); }
   .pillnav .seg .num { display: none; }
   .status { display: none; }
   .brand .who b { font-size: 13.5px; }
+  .hero-credentials { grid-template-columns: 1fr; gap: 14px; }
 }
 @media (max-width: 520px) {
   .gallery, .teardowns { grid-template-columns: 1fr; }
@@ -706,4 +747,3 @@ main { flex: 1; padding-bottom: clamp(60px, 10vh, 130px); }
   width: 100%;
   overflow: hidden;
 }
-

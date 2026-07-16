@@ -105,6 +105,7 @@ export function App() {
   if (loading || !D) return <div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>Loading...</div>;
 
   const h = D.hero;
+  const certifications = h.certifications || [];
   const isAdmin = validActive === 'admin';
 
   return (
@@ -127,7 +128,7 @@ export function App() {
               </div>
               <div className="hero-text">
                 <div className="eyebrow">Portfolio — {new Date().getFullYear()}</div>
-                <h1 className="hero-name" style={{ fontFamily: '-apple-system', fontSize: '50px' }}>{D.name}</h1>
+                <h1 className="hero-name" style={{ fontFamily: '-apple-system' }}>{D.name}</h1>
                 <div className="hero-role">
                   <span className="hero-mark">AP</span>
                   {D.role}
@@ -142,7 +143,8 @@ export function App() {
                   <span className="v">{f.v}</span>
                 </div>
               ))}
-              <div className="hero-fact hero-edu-fact">
+              <div className="hero-fact hero-edu-fact hero-credentials">
+                <div className="cred-col cred-edu">
                 <span className="k">Education</span>
                 <div className="hero-edu">
                   {(h.education || []).map((e) => (
@@ -158,6 +160,27 @@ export function App() {
                     </div>
                   ))}
                 </div>
+                </div>
+                {certifications.length > 0 && (
+                  <div className="cred-col cred-cert">
+                    <span className="k">Certifications</span>
+                    <div className="cert-ticker" aria-label="Certifications">
+                      <div className="cert-track">
+                        {[...certifications, ...certifications].map((c, i) => (
+                          <span className="cert-chip" key={`${c.issuer}-${c.cert}-${i}`} aria-hidden={i >= certifications.length}>
+                            <span className="cert-mark" data-logo={c.logo ? '1' : undefined}>
+                              {c.logo ? <img className="cert-logo" src={c.logo} alt={c.issuer} /> : c.short}
+                            </span>
+                            <span className="cert-meta">
+                              <span className="cert-issuer">{c.issuer}</span>
+                              <span className="cert-name">{c.cert} · {c.year}</span>
+                            </span>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="hero-status" style={{ fontSize: '11px' }}>
                 <span className="dot" />

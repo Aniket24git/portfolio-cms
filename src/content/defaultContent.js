@@ -74,6 +74,26 @@ export const defaultCaseStudies = [
   }
 ];
 
+export const defaultTeardownDetail = {
+  context: "I pulled {app} apart to understand one thing: how it earns the next tap. This is a working teardown — the notes below are the friction I felt as a first-time user, the moves I'd happily steal, and the places where the seams still show. Swap this copy for the real write-up.",
+  broken: [
+    "The first run asks for a decision before it has earned one — the opening screen is a wall, not a doorway.",
+    "The thing I actually came to do sits one menu too deep; the primary action should never be a treasure hunt.",
+    "Some state changes happen in silence — no confirmation, no motion — so I'm never quite sure the action landed.",
+  ],
+  works: [
+    "The core loop is tight: the primary action stays within thumb reach and is rarely more than a tap away.",
+    "Motion is used as explanation, not decoration — every transition tells me where I came from and where I'm headed.",
+    "Defaults are opinionated. {app} makes the boring choices for me so I can spend attention on the interesting ones.",
+  ],
+  screens: [
+    { tag: "first run", cap: "Onboarding — the first decision {app} asks of a new user." },
+    { tag: "core loop", cap: "The main flow, annotated for the aha-moment." },
+    { tag: "edge case", cap: "What happens when something goes wrong." },
+  ],
+  criteria: ["First-run", "Core flow", "Craft & polish", "Performance", "Trust signals"],
+};
+
 export const defaultTeardowns = [
   {
     id: uuidv4(),
@@ -102,26 +122,6 @@ export const defaultTeardowns = [
     details: defaultTeardownDetail,
   }
 ];
-
-export const defaultTeardownDetail = {
-  context: "I pulled {app} apart to understand one thing: how it earns the next tap. This is a working teardown — the notes below are the friction I felt as a first-time user, the moves I'd happily steal, and the places where the seams still show. Swap this copy for the real write-up.",
-  broken: [
-    "The first run asks for a decision before it has earned one — the opening screen is a wall, not a doorway.",
-    "The thing I actually came to do sits one menu too deep; the primary action should never be a treasure hunt.",
-    "Some state changes happen in silence — no confirmation, no motion — so I'm never quite sure the action landed.",
-  ],
-  works: [
-    "The core loop is tight: the primary action stays within thumb reach and is rarely more than a tap away.",
-    "Motion is used as explanation, not decoration — every transition tells me where I came from and where I'm headed.",
-    "Defaults are opinionated. {app} makes the boring choices for me so I can spend attention on the interesting ones.",
-  ],
-  screens: [
-    { tag: "first run", cap: "Onboarding — the first decision {app} asks of a new user." },
-    { tag: "core loop", cap: "The main flow, annotated for the aha-moment." },
-    { tag: "edge case", cap: "What happens when something goes wrong." },
-  ],
-  criteria: ["First-run", "Core flow", "Craft & polish", "Performance", "Trust signals"],
-};
 
 export const defaultAnalytics = {
   intro: "A short field guide to how I reason about product metrics — what I instrument, what I ignore, and how I keep a team honest.",
