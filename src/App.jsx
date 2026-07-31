@@ -148,15 +148,16 @@ export function App() {
                   <span className="k">Education</span>
                   <div className="hero-edu">
                     {(h.education || []).map((e) => (
-                      <span className="edu-chip" key={e.short}>
-                        <span className="edu-mark" data-logo={e.logo ? '1' : undefined}>
-                          {e.logo ? <img className="edu-logo" src={e.logo} alt={e.name} /> : e.short}
+                      <div className="edu-chip" key={e.short} tabIndex={0}
+                        aria-label={e.name + ' — ' + e.course + ' · ' + e.year}>
+                        {e.logo ?
+                          <img className="edu-logo" src={e.logo} alt={e.name} /> :
+                          <span className="edu-mono">{e.short}</span>}
+                        <span className="edu-pop">
+                          <span className="edu-pop-name">{e.name}</span>
+                          <span className="edu-pop-meta">{e.course} · {e.year}</span>
                         </span>
-                        <span className="edu-meta">
-                          <span className="edu-name">{e.name}</span>
-                          <span className="edu-course">{e.course} · {e.year}</span>
-                        </span>
-                      </span>
+                      </div>
                     ))}
                   </div>
                 </div>

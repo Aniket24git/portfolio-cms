@@ -262,7 +262,6 @@ main { flex: 1; padding-bottom: clamp(60px, 10vh, 130px); }
   .pagefx.entering { animation: none; }
   .pillnav .thumb { transition: none; }
   .shimmer-on .pillnav .thumb::after { animation: none; }
-  .hero-grain, .hero-main, .hero-text, .hero-portrait, .hero-side, .cert-track { animation: none; }
 }
 
 /* ---------- hero (shared across pages, collapses on scroll) ---------- */
@@ -288,17 +287,9 @@ main { flex: 1; padding-bottom: clamp(60px, 10vh, 130px); }
   background-size: 30px 30px;
   -webkit-mask-image: radial-gradient(130% 130% at 100% 0%, black, transparent 70%);
           mask-image: radial-gradient(130% 130% at 100% 0%, black, transparent 70%);
-  animation: heroGridDrift 18s linear infinite;
 }
-.hero-main {
-  position: relative; z-index: 1; align-self: center; display: flex; align-items: center; gap: clamp(18px, 2.6vw, 38px);
-  transform: translate3d(calc(var(--scrollp) * -18px), calc(var(--scrollp) * -8px), 0);
-  opacity: calc(1 - (var(--scrollp) * 0.22));
-  will-change: transform, opacity;
-  animation: heroContentIn 0.75s var(--ease) both;
-}
+.hero-main { position: relative; z-index: 1; align-self: center; display: flex; align-items: center; gap: clamp(18px, 2.6vw, 38px); }
 .hero-text { min-width: 0; }
-.hero-text { animation: heroTextIn 0.8s var(--ease) 0.08s both; }
 
 /* portrait — coloured pencil sketch at rest, crossfading to a Claude-orange
    ink sketch as the hero collapses on scroll (it re-emerges in the corner) */
@@ -310,9 +301,6 @@ main { flex: 1; padding-bottom: clamp(60px, 10vh, 130px); }
   background: var(--ti-00);
   border: 1px solid var(--glass-edge);
   box-shadow: var(--glass-shadow), inset 0 1px 0 rgba(255,255,255,0.5);
-  transform: scale(calc(1 - (var(--scrollp) * 0.08)));
-  will-change: transform;
-  animation: heroPortraitIn 0.85s var(--ease) both;
 }
 .hero-portrait::after {
   content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 2;
@@ -355,10 +343,6 @@ main { flex: 1; padding-bottom: clamp(60px, 10vh, 130px); }
   display: flex; flex-direction: column; justify-content: center; gap: 0;
   padding-left: clamp(0px, 2vw, 28px);
   border-left: 1px solid var(--hair);
-  transform: translate3d(calc(var(--scrollp) * 18px), 0, 0);
-  opacity: calc(1 - (var(--scrollp) * 0.42));
-  will-change: transform, opacity;
-  animation: heroSideIn 0.75s var(--ease) 0.16s both;
 }
 .hero-fact { padding: 14px 0; border-bottom: 1px solid var(--hair-soft); }
 .hero-fact:first-child { padding-top: 0; }
@@ -374,47 +358,84 @@ main { flex: 1; padding-bottom: clamp(60px, 10vh, 130px); }
 .hero-status.alt { margin-top: 10px; }
 .hero-status.alt .dot { background: var(--accent-ink); box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent-ink) 20%, transparent); }
 
-/* education mirrors the certification chip: a fixed mark plus always-visible
-   meta, so both credential columns read the same way at a glance */
+/* education marks — background-free, ink monochrome */
 .hero-edu-fact { border-bottom: 0; padding-bottom: 0; }
-.hero-edu { display: flex; flex-wrap: wrap; align-items: center; gap: 18px 22px; margin-top: 6px; }
-.edu-chip { display: inline-flex; align-items: center; gap: 9px; min-width: 0; }
-.edu-mark {
-  width: 30px; height: 30px; flex: none; display: grid; place-items: center;
-  border-radius: 8px; color: var(--ink); background: var(--ti-10);
-  font-family: var(--mono); font-size: 10px; font-weight: 600;
-  letter-spacing: 0.02em; overflow: hidden;
+.hero-edu { display: flex; flex-wrap: wrap; align-items: center; gap: 26px; margin-top: 6px; }
+.edu-chip {
+  position: relative;
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 4px 2px; cursor: default; outline: none;
+  opacity: 0.82;
+  transition: opacity 0.32s var(--ease), transform 0.32s var(--ease);
 }
-.edu-mark[data-logo="1"] { background: transparent; }
-/* min-*: 0 stops the grid item's automatic minimum size from letting a
-   portrait logo grow past the mark and clip against its overflow: hidden */
-.edu-logo { width: 100%; height: 100%; min-width: 0; min-height: 0; display: block; object-fit: contain; }
-.edu-meta { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
-.edu-name { font-size: 12px; font-weight: 600; color: var(--ink); }
-.edu-course { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.03em; text-transform: uppercase; color: var(--muted); }
+.edu-chip:hover, .edu-chip:focus-visible { opacity: 1; transform: translateY(-1px); }
+.edu-logo { height: 30px; width: auto; max-width: 116px; object-fit: contain; display: block; }
+.edu-mono {
+  font-family: var(--mono); font-size: 19px; font-weight: 600;
+  letter-spacing: 0.04em; color: var(--ink);
+}
+.edu-pop {
+  position: absolute; left: 50%; bottom: calc(100% + 12px);
+  transform: translate(-50%, 6px) scale(0.96); transform-origin: bottom center;
+  display: flex; flex-direction: column; gap: 3px; align-items: flex-start;
+  padding: 10px 13px; width: max-content; max-width: 240px;
+  background: var(--glass-tint-strong);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
+  color: var(--ink);
+  border: 1px solid var(--glass-edge);
+  border-radius: var(--r-sm);
+  box-shadow: var(--glass-shadow);
+  opacity: 0; pointer-events: none; z-index: 6;
+  transition: opacity 0.26s var(--ease), transform 0.26s var(--ease);
+}
+.edu-pop::after {
+  content: ""; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+  border: 6px solid transparent; border-top-color: var(--glass-tint-strong);
+}
+.edu-chip:hover .edu-pop, .edu-chip:focus-visible .edu-pop {
+  opacity: 1; transform: translate(-50%, 0) scale(1);
+}
+.edu-pop-name { font-size: 12.5px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.15; color: var(--ink); }
+.edu-pop-meta { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
 
-/* credentials skeleton — the right rail stays quiet while the certificate strip
-   supplies a small, continuous motion cue for the hero */
-.hero-credentials { display: grid; grid-template-columns: minmax(116px, 0.7fr) minmax(0, 1.3fr); gap: clamp(18px, 2.8vw, 30px); align-items: start; }
-.hero-credentials .cred-col { min-width: 0; }
-.hero-credentials .hero-edu { margin-top: 2px; }
-.cert-ticker { position: relative; overflow: hidden; min-width: 0; margin-top: 2px; mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent); -webkit-mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent); }
-.cert-track { display: flex; width: max-content; gap: 18px; padding: 4px 0; animation: certTicker 22s linear infinite; }
-.cert-ticker:hover .cert-track, .cert-ticker:focus-within .cert-track { animation-play-state: paused; }
-.cert-chip { display: inline-flex; align-items: center; gap: 9px; min-width: 174px; padding-right: 18px; border-right: 1px solid var(--hair-soft); }
-.cert-mark { width: 30px; height: 30px; flex: none; display: grid; place-items: center; border-radius: 8px; color: var(--ink); background: var(--ti-10); font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: 0.02em; overflow: hidden; }
-.cert-mark[data-logo="1"] { background: transparent; }
-.cert-logo { width: 100%; height: 100%; min-width: 0; min-height: 0; display: block; object-fit: contain; }
-.cert-meta { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
-.cert-issuer { font-size: 12px; font-weight: 600; color: var(--ink); white-space: nowrap; }
-.cert-name { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.03em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+/* credentials row — education beside certifications */
+.hero-credentials {
+  display: grid; grid-template-columns: auto minmax(0, 1fr);
+  gap: 22px; align-items: start;
+}
+.cred-col { display: flex; flex-direction: column; min-width: 0; }
+.cred-cert { border-left: 1px solid var(--hair-soft); padding-left: 22px; }
 
-@keyframes heroContentIn { from { opacity: 0; transform: translate3d(-18px, 10px, 0); } to { opacity: 1; transform: translate3d(calc(var(--scrollp) * -18px), calc(var(--scrollp) * -8px), 0); } }
-@keyframes heroTextIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
-@keyframes heroPortraitIn { from { opacity: 0; transform: scale(0.92) rotate(-2deg); } to { opacity: 1; transform: scale(calc(1 - (var(--scrollp) * 0.08))); } }
-@keyframes heroSideIn { from { opacity: 0; transform: translate3d(18px, 8px, 0); } to { opacity: calc(1 - (var(--scrollp) * 0.42)); transform: translate3d(calc(var(--scrollp) * 18px), 0, 0); } }
-@keyframes heroGridDrift { from { background-position: 0 0, 0 0; } to { background-position: 30px 30px, 30px 30px; } }
-@keyframes certTicker { from { transform: translateX(0); } to { transform: translateX(calc(-50% - 9px)); } }
+/* certification ticker tape */
+.cert-ticker {
+  position: relative; margin-top: 8px; overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+          mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+.cert-track { display: flex; align-items: center; width: max-content; animation: certScroll 30s linear infinite; }
+.cert-ticker:hover .cert-track { animation-play-state: paused; }
+@keyframes certScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.cert-chip {
+  flex: none; display: inline-flex; align-items: center; gap: 9px; margin-right: 14px;
+  padding: 7px 14px 7px 8px; border-radius: 999px;
+  border: 1px solid var(--hair); background: color-mix(in oklab, var(--ti-00) 45%, transparent);
+}
+.cert-mark {
+  width: 38px; height: 38px; flex: none; border-radius: 9px;
+  display: grid; place-items: center; overflow: hidden;
+  font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: 0.01em;
+  color: var(--ti-00); background: linear-gradient(155deg, var(--ti-90), var(--ti-70));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.22);
+}
+.cert-mark[data-logo] { background: var(--ti-00); border: 1px solid var(--hair); box-shadow: inset 0 1px 0 rgba(255,255,255,0.4); padding: 0; }
+.cert-logo { width: 100%; height: 100%; min-width: 0; min-height: 0; object-fit: contain; display: block; }
+.cert-meta { display: flex; flex-direction: column; line-height: 1.1; white-space: nowrap; }
+.cert-issuer { font-size: 12px; font-weight: 600; letter-spacing: -0.01em; color: var(--ink); }
+.cert-name { font-family: var(--mono); font-size: 9px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-top: 2px; }
+@media (prefers-reduced-motion: reduce) {
+  .cert-track { animation: none; flex-wrap: wrap; gap: 8px 0; }
+}
 
 /* section header */
 .sechead { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin: clamp(24px,5vh,48px) 0 28px; flex-wrap: wrap; }
@@ -571,7 +592,8 @@ main { flex: 1; padding-bottom: clamp(60px, 10vh, 130px); }
   .gallery, .teardowns { grid-template-columns: repeat(2, 1fr); }
   .hero { grid-template-columns: 1fr; gap: 26px; }
   .hero-side { border-left: 0; border-top: 1px solid var(--hair); padding-left: 0; padding-top: 22px; }
-  .hero-credentials { grid-template-columns: minmax(116px, 0.7fr) minmax(0, 1.3fr); }
+  .hero-credentials { grid-template-columns: 1fr; gap: 16px; }
+  .cred-cert { border-left: 0; padding-left: 0; border-top: 1px solid var(--hair-soft); padding-top: 16px; }
   .case, .case:nth-child(even) { grid-template-columns: 1fr; }
   .case .cmedia, .case:nth-child(even) .cmedia { order: 0; }
   .essay { grid-template-columns: 1fr; }
@@ -592,7 +614,6 @@ main { flex: 1; padding-bottom: clamp(60px, 10vh, 130px); }
   .pillnav .seg .num { display: none; }
   .status { display: none; }
   .brand .who b { font-size: 13.5px; }
-  .hero-credentials { grid-template-columns: 1fr; gap: 14px; }
 }
 @media (max-width: 520px) {
   .gallery, .teardowns { grid-template-columns: 1fr; }
