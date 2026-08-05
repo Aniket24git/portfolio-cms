@@ -7,7 +7,7 @@ import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { EntryForm } from '../components/admin/EntryForm';
 
 export function AdminPage() {
-  const { data, updateData, addEntry, updateEntry, deleteEntry, uploadImage } = useStore();
+  const { data, updateData, saveError, addEntry, updateEntry, deleteEntry, uploadImage } = useStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [user, setUser] = useState(auth?.currentUser || null);
@@ -87,6 +87,13 @@ export function AdminPage() {
 
   return (
     <div className="page wrap" style={{ marginTop: '100px' }}>
+      {saveError && (
+        <div className="errbox glass" style={{ marginBottom: '24px' }}>
+          <div className="eyebrow">Not saved</div>
+          <p>Your last change was rejected and has been rolled back, so nothing was lost on the published site.</p>
+          <pre className="errdetail">{saveError}</pre>
+        </div>
+      )}
       {!(isAdding || editingItem) && (
         <>
           <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>

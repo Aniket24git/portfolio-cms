@@ -5,8 +5,15 @@ import { Chips } from '../components/Chips';
 import { SectionHead } from '../components/SectionHead';
 
 function TeardownDetail({ t, onBack }) {
-  const det = t.details || { broken: [], works: [], screens: [], criteria: [] };
-  const fill = (s) => s.replace(/\{app\}/g, t.app || 'App');
+  const d = t.details || {};
+  const det = {
+    context: d.context || '',
+    broken: d.broken || [],
+    works: d.works || [],
+    screens: d.screens || [],
+    criteria: d.criteria || [],
+  };
+  const fill = (s) => String(s ?? '').replace(/\{app\}/g, t.app || 'App');
   return (
     <div className="tdetail">
       <button className="tback" onClick={onBack}>
@@ -91,7 +98,8 @@ export function TeardownsPage() {
     const top = hero ? hero.offsetHeight : 0;
     window.scrollTo({ top, behavior: 'auto' });
   }, [open]);
-  const current = open && D.teardowns.find((x) => x.idx === open);
+  const teardowns = D.teardowns || [];
+  const current = open && teardowns.find((x) => x.idx === open);
 
   if (current) {
     return (
@@ -107,10 +115,10 @@ export function TeardownsPage() {
         eyebrow="Field notes"
         title="Product teardowns."
         sub="I take apart products I admire (and a few I don't) to keep my instincts sharp. Open a card for the full dissection."
-        meta={`${D.teardowns.length} teardowns<br/>updated monthly`}
+        meta={`${teardowns.length} teardowns<br/>updated monthly`}
       />
       <div className="teardowns">
-        {D.teardowns.map((t) => (
+        {teardowns.map((t) => (
           <article
             className="tcard glass" key={t.idx}
             role="button" tabIndex={0}

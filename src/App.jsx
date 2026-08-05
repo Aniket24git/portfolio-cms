@@ -1,6 +1,7 @@
 import React from 'react';
 import { useStore } from './store';
 import { PillNav } from './components/PillNav';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { ProjectsPage } from './pages/ProjectsPage';
 import { CasesPage } from './pages/CasesPage';
 import { TeardownsPage } from './pages/TeardownsPage';
@@ -226,9 +227,11 @@ export function App() {
 
         <main>
           <div className={'pagefx' + (entering ? ' entering' : '')} key={validActive}>
-            <React.Suspense fallback={<div style={{padding: '20px'}}>Loading...</div>}>
-              <Page />
-            </React.Suspense>
+            <ErrorBoundary key={validActive}>
+              <React.Suspense fallback={<div style={{padding: '20px'}}>Loading...</div>}>
+                <Page />
+              </React.Suspense>
+            </ErrorBoundary>
           </div>
         </main>
 
