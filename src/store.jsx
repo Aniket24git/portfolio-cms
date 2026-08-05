@@ -9,6 +9,9 @@ const StoreContext = createContext();
 /* Nested fields the schema requires but the editor form does not collect. Without
    these a newly added teardown fails validation, the save is rejected, and the
    detail view renders from unsaved state with no `details` at all. */
+const ALLOWED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'image/svg+xml'];
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+
 const NEW_ENTRY_DEFAULTS = {
   teardowns: {
     rating: 0,
@@ -58,9 +61,22 @@ export function StoreProvider({ children }) {
 
   const uploadImage = async (file) => {
     if (!file) return null;
+
+    // Mirror the storage rules client-side so the user gets a reason rather than
+    // an opaque permission error, and never build a path out of a raw filename.
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      setSaveError(`Unsupported image type: ${file.type || 'unknown'}`);
+      return null;
+    }
+    if (file.size > MAX_IMAGE_BYTES) {
+      setSaveError(`Image is too large (max ${MAX_IMAGE_BYTES / 1024 / 1024}MB)`);
+      return null;
+    }
+
     if (storage) {
       try {
-        const fileRef = ref(storage, `images/${Date.now()}_${file.name}`);
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_').slice(-64);
+        const fileRef = ref(storage, `images/${Date.now()}_${safeName}`);
         await uploadBytes(fileRef, file);
         const url = await getDownloadURL(fileRef);
         return url;

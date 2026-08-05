@@ -115,7 +115,7 @@ export function TeardownsPage() {
         eyebrow="Field notes"
         title="Product teardowns."
         sub="I take apart products I admire (and a few I don't) to keep my instincts sharp. Open a card for the full dissection."
-        meta={`${teardowns.length} teardowns<br/>updated monthly`}
+        meta={[`${teardowns.length} teardowns`, "updated monthly"]}
       />
       <div className="teardowns">
         {teardowns.map((t) => (

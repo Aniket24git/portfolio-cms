@@ -12,7 +12,7 @@ export function ProjectsPage() {
         eyebrow="Selected work"
         title="Things I helped ship."
         sub="A generalist's range — zero-to-one bets, platform groundwork and growth loops. Open a card for the full story."
-        meta={`${D.projects.length} projects<br/>2023 — 2025`}
+        meta={[`${D.projects.length} projects`, "2023 — 2025"]}
       />
       <div className="gallery">
         {D.projects.map((p) => (

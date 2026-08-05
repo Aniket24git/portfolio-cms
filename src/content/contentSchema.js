@@ -37,12 +37,27 @@ export const heroSchema = z.object({
   certifications: z.array(certificationSchema).optional().default([]),
 });
 
+/* Footer links are rendered straight into href, so constrain the scheme here as
+   well as at the render site — a stored "javascript:..." is otherwise script
+   execution on click. */
+const httpUrl = z.string().url().refine(
+  (v) => /^https?:\/\//i.test(v),
+  { message: 'Link must be an http(s) URL' }
+);
+
+export const contactSchema = z.object({
+  email: z.string().email().optional(),
+  linkedin: httpUrl.optional(),
+  resume: httpUrl.optional(),
+});
+
 export const profileSchema = z.object({
   name: z.string(),
   role: z.string(),
   location: z.string(),
   status: z.string(),
   hero: heroSchema,
+  contact: contactSchema.optional().default({}),
 });
 
 // --- Portfolio Collections ---

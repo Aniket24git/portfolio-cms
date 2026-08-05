@@ -2,6 +2,7 @@ import React from 'react';
 import { useStore } from './store';
 import { PillNav } from './components/PillNav';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { safeUrl, safeMailto } from './shared/safeUrl';
 import { ProjectsPage } from './pages/ProjectsPage';
 import { CasesPage } from './pages/CasesPage';
 import { TeardownsPage } from './pages/TeardownsPage';
@@ -239,9 +240,9 @@ export function App() {
         <footer className="foot">
           <div className="fl">© {new Date().getFullYear()} {D.name} · {D.location}</div>
           <div className="fr">
-            <a href={`mailto:${D.contact?.email || 'hello@example.com'}`}>Email</a>
-            <a href={D.contact?.linkedin || '#'} target="_blank" rel="noreferrer">LinkedIn</a>
-            <a href={D.contact?.resume || '#'} target="_blank" rel="noreferrer">Résumé</a>
+            <a href={`mailto:${safeMailto(D.contact?.email, 'hello@example.com')}`}>Email</a>
+            <a href={safeUrl(D.contact?.linkedin)} target="_blank" rel="noreferrer">LinkedIn</a>
+            <a href={safeUrl(D.contact?.resume)} target="_blank" rel="noreferrer">Résumé</a>
           </div>
         </footer>
         )}

@@ -12,7 +12,7 @@ export function CasesPage() {
         eyebrow="Deep dives"
         title="Case studies."
         sub="Three problems told end to end — the situation, the call I made, and what actually moved."
-        meta={`${D.caseStudies.length} studies<br/>problem → outcome`}
+        meta={[`${D.caseStudies.length} studies`, "problem → outcome"]}
       />
       <div className="cases">
         {D.caseStudies.map((c) => (
